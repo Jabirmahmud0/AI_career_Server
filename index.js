@@ -38,10 +38,22 @@ app.use('/api', async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Database connection error in middleware:', error);
-    res.status(500).json({ 
-      message: 'Database connection failed', 
-      error: error.message 
-    });
+    console.error('Request path:', req.path);
+    console.error('Request method:', req.method);
+    
+    // Provide more detailed error response
+    const errorResponse = {
+      message: 'Database connection failed',
+      error: error.message,
+      hint: 'Please check your Vercel environment variables (MONGODB_URI) and MongoDB Atlas settings.'
+    };
+    
+    // In development, include more details
+    if (process.env.NODE_ENV !== 'production') {
+      errorResponse.stack = error.stack;
+    }
+    
+    res.status(500).json(errorResponse);
   }
 });
 
