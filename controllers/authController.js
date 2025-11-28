@@ -1,9 +1,13 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User.js');
+const connectDB = require('../config/db.js');
 
 // Generate JWT
 const generateToken = (id) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d'
   });
@@ -15,6 +19,9 @@ const generateToken = (id) => {
 const register = async (req, res) => {
   try {
     console.log('Registration request received:', req.body);
+    
+    // Ensure database connection
+    await connectDB();
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -71,6 +78,9 @@ const register = async (req, res) => {
 // @access  Public
 const login = async (req, res) => {
   try {
+    // Ensure database connection
+    await connectDB();
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });

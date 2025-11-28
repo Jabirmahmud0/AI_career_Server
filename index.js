@@ -6,8 +6,11 @@ const connectDB = require('./config/db.js');
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
+// Connect to database (lazy connection for serverless)
+// Don't await here - let it connect on first request
+connectDB().catch(err => {
+  console.error('Initial DB connection error (will retry on first request):', err.message);
+});
 
 const app = express();
 
@@ -26,6 +29,20 @@ app.use(express.json({ limit: '10mb' }));
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
   next();
+});
+
+// Middleware to ensure DB connection before API routes
+app.use('/api', async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection error in middleware:', error);
+    res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: error.message 
+    });
+  }
 });
 
 // Routes
