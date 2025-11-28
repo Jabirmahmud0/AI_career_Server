@@ -13,7 +13,7 @@ const app = express();
 
 // Configure CORS to allow requests from your frontend
 const corsOptions = {
-  origin: ['https://careerbyai.vercel.app', 'http://localhost:3000'],
+  origin: true, // Allow all origins for now
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -21,6 +21,12 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+
+// Add a simple middleware to log requests
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.path}`);
+  next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth.js'));
