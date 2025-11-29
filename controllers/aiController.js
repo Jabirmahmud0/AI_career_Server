@@ -90,21 +90,27 @@ const deleteRoadmap = async (req, res) => {
 // @access  Private
 const chat = async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, userContext } = req.body;
 
     if (!message || message.trim() === '') {
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    const user = await User.findById(req.user._id);
-    const userContext = {
-      skills: user.skills,
-      targetRoles: user.targetRoles,
-      experienceLevel: user.experienceLevel,
-      preferredTrack: user.preferredTrack
-    };
+    // Use provided userContext or fetch from database
+    let context;
+    if (userContext) {
+      context = userContext;
+    } else {
+      const user = await User.findById(req.user._id);
+      context = {
+        skills: user.skills,
+        targetRoles: user.targetRoles,
+        experienceLevel: user.experienceLevel,
+        preferredTrack: user.preferredTrack
+      };
+    }
 
-    const response = await chatWithCareerBot(message, userContext);
+    const response = await chatWithCareerBot(message, context);
 
     res.json({
       userMessage: message,

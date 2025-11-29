@@ -309,12 +309,25 @@ Respond in JSON format:
 
 // CareerBot chat
 const chatWithCareerBot = async (userMessage, userContext) => {
+  // Handle both the old format and new comprehensive format
+  const skills = userContext.skills || userContext.technicalSkills || [];
+  const targetRoles = userContext.targetRoles || [];
+  const experienceLevel = userContext.experienceLevel || userContext.experience || 'Fresher';
+  const preferredTrack = userContext.preferredTrack || 'Not specified';
+  const fullName = userContext.fullName || 'User';
+  const email = userContext.email || 'Not provided';
+  const education = userContext.education || 'Not specified';
+  const preferences = userContext.preferences || {};
+
   const contextInfo = `
 User Profile Context:
-- Skills: ${userContext.skills?.join(', ') || 'Not specified'}
-- Target Roles: ${userContext.targetRoles?.join(', ') || 'Not specified'}
-- Experience Level: ${userContext.experienceLevel || 'Fresher'}
-- Preferred Track: ${userContext.preferredTrack || 'Not specified'}
+- Name: ${fullName}
+- Email: ${email}
+- Skills: ${skills.join(', ') || 'Not specified'}
+- Target Roles: ${targetRoles.join(', ') || 'Not specified'}
+- Experience Level: ${experienceLevel}
+- Education: ${education}
+- Preferred Track: ${preferredTrack}
 `;
 
   const messages = [
