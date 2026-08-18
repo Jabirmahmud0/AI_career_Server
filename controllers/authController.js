@@ -1,7 +1,21 @@
-const jwt = require('jsonwebtoken');
+﻿const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User.js');
 const connectDB = require('../config/db.js');
+
+const DEMO_EMAIL = 'demo@careerai.app';
+const DEMO_PASSWORD = 'Recruiter123!';
+const DEMO_PROFILE = {
+  fullName: 'Alex Morgan',
+  educationLevel: 'Bachelor',
+  department: 'Computer Science',
+  experienceLevel: 'Junior',
+  preferredTrack: 'Web Development',
+  skills: ['JavaScript', 'React', 'Node.js', 'Git', 'UI/UX'],
+  targetRoles: ['Frontend Developer', 'Full Stack Developer'],
+  bio: 'Product-minded developer building accessible, user-focused web experiences.',
+  projects: [{ title: 'CareerAI Portfolio', description: 'Built a responsive AI-assisted career planning experience.', technologies: ['React', 'Node.js', 'MongoDB'] }]
+};
 
 // Generate JWT
 const generateToken = (id) => {
@@ -88,8 +102,20 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
+    // Keep the public recruiter demo available without a separate seed step.
+    let user = await User.findOne({ email });
+    if (email?.toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD) {
+      if (!user) {
+        user = await User.create({ email: DEMO_EMAIL, password: DEMO_PASSWORD, ...DEMO_PROFILE });
+      } else {
+        const demoPasswordIsCurrent = await user.matchPassword(DEMO_PASSWORD);
+        Object.assign(user, DEMO_PROFILE);
+        if (!demoPasswordIsCurrent) user.password = DEMO_PASSWORD;
+        await user.save();
+      }
+    }
+
     // Find user
-    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
