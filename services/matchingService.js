@@ -185,9 +185,10 @@ const getRecommendedResources = async (user, limit = 10) => {
       }
     }
     
-    // If no conditions, return empty array
+    // If no conditions, return top-rated resources as fallback
     if (queryConditions.length === 0) {
-      return [];
+      const fallback = await LearningResource.find({}).sort({ rating: -1 }).limit(limit);
+      return fallback.map(resource => ({ resource: resource.toObject(), score: 0, matchingSkills: [] }));
     }
 
     // Find resources matching user's track and skills they want to improve
